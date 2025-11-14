@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天记录 - 2023年01月12日</title>
+    <style>
+    body {
+        font-family: 'Microsoft YaHei', Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 2.5em;
+        font-weight: 300;
+    }
+
+    .header .date {
+        color: #7f8c8d;
+        font-size: 1.2em;
+        margin-top: 10px;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+    }
+
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .message {
+        display: flex;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ecf0f1;
+        transition: background-color 0.2s ease;
+    }
+
+    .message:hover {
+        background-color: #f8f9fa;
+    }
+
+    .message:last-child {
+        border-bottom: none;
+    }
+
+    /* 消息左右对齐样式 */
+    .message-left {
+        justify-content: flex-start;
+    }
+
+    .message-right {
+        justify-content: flex-end;
+    }
+
+    /* 头像样式 */
+    .message-avatar {
+        flex-shrink: 0;
+        margin-right: 12px;
+    }
+
+    .message-right .message-avatar {
+        margin-right: 0;
+        margin-left: 12px;
+        order: 2;
+    }
+
+    .avatar-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e1e8ed;
+    }
+
+    .message-content-wrapper {
+        max-width: 70%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message-right .message-content-wrapper {
+        align-items: flex-end;
+    }
+
+    .message-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+
+    .message-right .message-header {
+        flex-direction: row-reverse;
+    }
+
+    .sender {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-right: 8px;
+    }
+
+    .message-right .sender {
+        margin-right: 0;
+        margin-left: 8px;
+    }
+
+    .time {
+        color: #95a5a6;
+        font-size: 0.85em;
+    }
+
+    .message-content {
+        color: #34495e;
+        line-height: 1.5;
+        word-wrap: break-word;
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 18px;
+        border-top-left-radius: 4px;
+    }
+
+    .message-right .message-content {
+        background: #3498db;
+        color: white;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 4px;
+    }
+
+    .shengsheng-message .sender {
+        color: #e74c3c;
+    }
+
+    .user-message .sender {
+        color: #3498db;
+    }
+
+    .stats {
+        text-align: center;
+        margin-top: 20px;
+        color: #7f8c8d;
+        font-size: 0.9em;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 600px) {
+        body {
+            padding: 10px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+        }
+
+        .message {
+            padding: 12px 15px;
+        }
+
+        .avatar-img {
+            width: 35px;
+            height: 35px;
+        }
+
+        .message-content-wrapper {
+            max-width: 75%;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="header">
+        <h1>2023年01月12日</h1>
+        <p class="date-info">共 47 条消息</p>
+    </div>
+    <div class="navigation">
+        <a href="calendar_index.html" class="nav-btn">返回日历</a>
+    </div>
+    <div class="chat-container">
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 19:34:01</span>
+                </div>
+                <div class="message-content">宝贝</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 19:34:08</span>
+                </div>
+                <div class="message-content">晚上好</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 19:41:51</span>
+                </div>
+                <div class="message-content">晚上好 宝贝</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 19:45:58</span>
+                </div>
+                <div class="message-content">包子</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 19:46:01</span>
+                </div>
+                <div class="message-content">今天还没跑</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:45:12</span>
+                </div>
+                <div class="message-content">[图片]</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:45:27</span>
+                </div>
+                <div class="message-content">咋了呀</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:06</span>
+                </div>
+                <div class="message-content">没怎么宝贝</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:11</span>
+                </div>
+                <div class="message-content">跑了吗</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:26</span>
+                </div>
+                <div class="message-content">没跑</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:32</span>
+                </div>
+                <div class="message-content">来吧</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:32</span>
+                </div>
+                <div class="message-content">没法跑</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:36</span>
+                </div>
+                <div class="message-content">啊</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:37</span>
+                </div>
+                <div class="message-content">为什么</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:40</span>
+                </div>
+                <div class="message-content">那黑金</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:41</span>
+                </div>
+                <div class="message-content">岂不是</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:46:43</span>
+                </div>
+                <div class="message-content">没了</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:49</span>
+                </div>
+                <div class="message-content">黑金过几天换</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:54</span>
+                </div>
+                <div class="message-content">我在学校这边呀</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:46:58</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:04</span>
+                </div>
+                <div class="message-content">心疼你24秒</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:06</span>
+                </div>
+                <div class="message-content">蜡烛暂时够的宝贝</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:11</span>
+                </div>
+                <div class="message-content">好的好的</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:13</span>
+                </div>
+                <div class="message-content">那就好</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:15</span>
+                </div>
+                <div class="message-content">唔</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:20</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:27</span>
+                </div>
+                <div class="message-content">要是换不了</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:33</span>
+                </div>
+                <div class="message-content">你告诉俺</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:36</span>
+                </div>
+                <div class="message-content">俺帮你</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:41</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:45</span>
+                </div>
+                <div class="message-content">应该可以</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:49</span>
+                </div>
+                <div class="message-content">明天最后一天了</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:50</span>
+                </div>
+                <div class="message-content">那就好</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:52</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:47:54</span>
+                </div>
+                <div class="message-content">爱你</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:55</span>
+                </div>
+                <div class="message-content">别错过了</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:47:57</span>
+                </div>
+                <div class="message-content">爱你呀</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:48:07</span>
+                </div>
+                <div class="message-content">怎么可能</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:48:13</span>
+                </div>
+                <div class="message-content">我等黑金等一年了</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:48:28</span>
+                </div>
+                <div class="message-content">嗯嗯</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:48:31</span>
+                </div>
+                <div class="message-content">我等你114514年了</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 21:48:35</span>
+                </div>
+                <div class="message-content">家里网有点差</div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 21:49:55</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 22:00:18</span>
+                </div>
+                <div class="message-content">晚安宝贝</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 22:00:25</span>
+                </div>
+                <div class="message-content">晚安呐</div>
+            </div>
+        </div>
+        <div class="message user-message message-right">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2872215021-星如雨.jpg" alt="星如雨" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">星如雨</span>
+                    <span class="time">2023-01-12 22:00:29</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+        <div class="message shengsheng-message message-left">
+            <div class="message-avatar">
+                <img src="../生生[2137463976]/individual-image/2137463976-生生.jpg" alt="生生" class="avatar-img">
+            </div>
+            <div class="message-content-wrapper">
+                <div class="message-header">
+                    <span class="sender">生生</span>
+                    <span class="time">2023-01-12 22:01:34</span>
+                </div>
+                <div class="message-content"></div>
+            </div>
+        </div>
+    </div>
+    <div class="navigation bottom-nav">
+        <a href="calendar_index.html" class="nav-btn">返回日历</a>
+    </div>
+</body>
+</html>

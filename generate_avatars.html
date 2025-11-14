@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>生成头像</title>
+</head>
+<body>
+    <canvas id="canvas1" width="60" height="60"></canvas>
+    <canvas id="canvas2" width="60" height="60"></canvas>
+    
+    <script>
+        // 生成星如雨头像（蓝色）
+        function generateAvatar1() {
+            const canvas = document.getElementById('canvas1');
+            const ctx = canvas.getContext('2d');
+            
+            // 绘制圆形背景
+            ctx.fillStyle = '#4A90E2';
+            ctx.beginPath();
+            ctx.arc(30, 30, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 绘制文字
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('星', 30, 30);
+            
+            // 下载图片
+            const link = document.createElement('a');
+            link.download = '2872215021-星如雨.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        }
+        
+        // 生成生生头像（绿色）
+        function generateAvatar2() {
+            const canvas = document.getElementById('canvas2');
+            const ctx = canvas.getContext('2d');
+            
+            // 绘制圆形背景
+            ctx.fillStyle = '#50C878';
+            ctx.beginPath();
+            ctx.arc(30, 30, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 绘制文字
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('生', 30, 30);
+            
+            // 下载图片
+            const link = document.createElement('a');
+            link.download = '2137463976-生生.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        }
+        
+        // 页面加载后自动生成
+        window.onload = function() {
+            setTimeout(() => {
+                generateAvatar1();
+                setTimeout(generateAvatar2, 500);
+            }, 100);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天记录搜索 - 便携版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .search-form {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .file-input-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px dashed #e9ecef;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 15px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .selected-files {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-name {
+            font-size: 14px;
+            color: #495057;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .remove-file {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .results-section {
+            padding: 30px;
+            background: white;
+            min-height: 400px;
+        }
+
+        .result-item {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-sender {
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .result-time {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .result-content {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .result-file {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .help-text h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .help-text ul {
+            margin-left: 20px;
+            color: #495057;
+        }
+
+        .help-text li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 聊天记录搜索</h1>
+            <p>便携版 - 支持本地文件搜索</p>
+        </div>
+
+        <div class="search-section">
+            <div class="help-text">
+                <h3>📖 使用说明</h3>
+                <ul>
+                    <li>点击下方区域选择要搜索的HTML聊天记录文件</li>
+                    <li>支持多选文件，可同时搜索多个聊天记录</li>
+                    <li>输入关键词进行搜索，支持中文和英文</li>
+                    <li>点击搜索结果可直接跳转到对应消息</li>
+                </ul>
+            </div>
+
+            <div class="file-input-section">
+                <label for="fileInput" class="file-input-label">
+                    📁 点击选择聊天记录文件（支持多选）
+                </label>
+                <input type="file" id="fileInput" class="file-input" multiple accept=".html,.htm">
+                <div id="selectedFiles" class="selected-files"></div>
+            </div>
+
+            <div class="search-form">
+                <input type="text" id="searchInput" class="search-input" placeholder="输入搜索关键词...">
+                <button id="searchButton" class="search-button">搜索</button>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="no-results">
+                <div class="no-results-icon">📋</div>
+                <h3>请选择聊天记录文件并输入搜索关键词</h3>
+                <p>支持搜索消息内容、发送者等信息</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PortableChatSearchEngine {
+            constructor() {
+                this.files = [];
+                this.isSearching = false;
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const fileInput = document.getElementById('fileInput');
+                const searchButton = document.getElementById('searchButton');
+                const searchInput = document.getElementById('searchInput');
+
+                fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                searchButton.addEventListener('click', () => this.performSearch());
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch();
+                    }
+                });
+            }
+
+            handleFileSelect(event) {
+                const files = Array.from(event.target.files);
+                this.files = files.map(file => ({
+                    file: file,
+                    name: file.name,
+                    url: URL.createObjectURL(file)
+                }));
+
+                this.updateSelectedFilesDisplay();
+                this.showMessage('文件选择成功！现在可以开始搜索了。');
+            }
+
+            updateSelectedFilesDisplay() {
+                const container = document.getElementById('selectedFiles');
+                
+                if (this.files.length === 0) {
+                    container.innerHTML = '<p style="color: #6c757d; text-align: center;">尚未选择文件</p>';
+                    return;
+                }
+
+                container.innerHTML = this.files.map((fileInfo, index) => `
+                    <div class="file-item">
+                        <span class="file-name">📄 ${fileInfo.name}</span>
+                        <button class="remove-file" onclick="searchEngine.removeFile(${index})">删除</button>
+                    </div>
+                `).join('');
+            }
+
+            removeFile(index) {
+                URL.revokeObjectURL(this.files[index].url);
+                this.files.splice(index, 1);
+                this.updateSelectedFilesDisplay();
+                
+                if (this.files.length === 0) {
+                    this.showMessage('请选择聊天记录文件并输入搜索关键词');
+                }
+            }
+
+            async performSearch() {
+                const query = document.getElementById('searchInput').value.trim();
+                
+                if (!query) {
+                    this.showMessage('请输入搜索关键词');
+                    return;
+                }
+
+                if (this.files.length === 0) {
+                    this.showMessage('请先选择要搜索的聊天记录文件');
+                    return;
+                }
+
+                if (this.isSearching) {
+                    return;
+                }
+
+                this.isSearching = true;
+                this.showLoading();
+
+                try {
+                    const results = await this.searchFiles(query);
+                    this.displayResults(results, query);
+                } catch (error) {
+                    this.showMessage('搜索出错: ' + error.message);
+                } finally {
+                    this.isSearching = false;
+                }
+            }
+
+            async searchFiles(query) {
+                const results = [];
+                const lowerQuery = query.toLowerCase();
+
+                for (const fileInfo of this.files) {
+                    try {
+                        const html = await this.readFileContent(fileInfo.file);
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        const messages = doc.querySelectorAll('.message, .chat-message, .msg');
+                        messages.forEach((message, index) => {
+                            const content = message.textContent || '';
+                            if (content.toLowerCase().includes(lowerQuery)) {
+                                const sender = this.extractSender(message);
+                                const time = this.extractTime(message);
+                                
+                                results.push({
+                                    content: this.extractContent(message),
+                                    sender: sender,
+                                    time: time,
+                                    fileName: fileInfo.name,
+                                    fileUrl: fileInfo.url,
+                                    messageId: message.getAttribute('id') || `msg-${index}`,
+                                    relevance: this.calculateRelevance(content, query)
+                                });
+                            }
+                        });
+                    } catch (error) {
+                        console.warn(`搜索文件 ${fileInfo.name} 时出错:`, error);
+                    }
+                }
+
+                return results.sort((a, b) => b.relevance - a.relevance);
+            }
+
+            readFileContent(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsText(file, 'UTF-8');
+                });
+            }
+
+            extractSender(message) {
+                const senderElement = message.querySelector('.sender, .user, .nickname, .author');
+                return senderElement ? senderElement.textContent.trim() : '未知';
+            }
+
+            extractTime(message) {
+                const timeElement = message.querySelector('.time, .timestamp, .date');
+                return timeElement ? timeElement.textContent.trim() : '';
+            }
+
+            extractContent(message) {
+                const contentElement = message.querySelector('.content, .text, .message-text');
+                if (contentElement) {
+                    return contentElement.textContent.trim();
+                }
+                return message.textContent.trim();
+            }
+
+            calculateRelevance(content, query) {
+                const lowerContent = content.toLowerCase();
+                const lowerQuery = query.toLowerCase();
+                
+                let score = 0;
+                
+                if (lowerContent.includes(lowerQuery)) score += 50;
+                
+                const matches = lowerContent.match(new RegExp(lowerQuery, 'g'));
+                if (matches) score += matches.length * 10;
+                
+                const contentLength = content.length;
+                if (contentLength > 10 && contentLength < 200) score += 5;
+                
+                return score;
+            }
+
+            showLoading() {
+                const resultsSection = document.getElementById('resultsSection');
+                resultsSection.innerHTML = `
+                    <div class="no-results">
+                        <div class="loading-spinner"></div>
+                        <h3>正在搜索...</h3>
+                        <p>请稍候，正在分析聊天记录</p>
+                    </div>
+                `;
+            }
+
+            displayResults(results, query) {
+                const resultsSection = document.getElementById('resultsSection');
+                
+                if (results.length === 0) {
+                    resultsSection.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-icon">😔</div>
+                            <h3>未找到相关结果</h3>
+                            <p>尝试使用其他关键词或检查文件内容</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                resultsSection.innerHTML = `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                        <strong>找到 ${results.length} 条相关结果</strong>
+                    </div>
+                    ${results.map(result => `
+                        <div class="result-item" onclick="searchEngine.openResult('${result.fileUrl}', '${result.messageId}')">
+                            <div class="result-header">
+                                <span class="result-sender">${result.sender}</span>
+                                <span class="result-time">${result.time}</span>
+                            </div>
+                            <div class="result-content">${this.highlightSearchTerm(result.content, query)}</div>
+                            <div class="result-file">📁 ${result.fileName}</div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            highlightSearchTerm(text, query) {
+                if (!query) return text;
+                
+                const regex = new RegExp(`(${query})`, 'gi');
+                return text.replace(regex, '<span class="highlight">$1</span>');
+            }
+
+            openResult(fileUrl, messageId) {
+                // 在新窗口中打开文件并定位到对应消息
+                const newWindow = window.open(fileUrl, '_blank');
+                if (newWindow && messageId) {
+                    newWindow.onload = () => {
+                        setTimeout(() => {
+                            const element = newWindow.document.getElementById(messageId);
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                element.style.backgroundColor = '#fff3cd';
+                                setTimeout(() => {
+                                    element.style.backgroundColor = '';
+                                }, 3000);
+                            }
+                        }, 500);
+                    };
+                }
+            }
+
+            showMessage(message) {
+                const resultsSection = document.getElementById('resultsSection');
+                resultsSection.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">💡</div>
+                        <h3>${message}</h3>
+                    </div>
+                `;
+            }
+        }
+
+        // 初始化搜索引擎
+        const searchEngine = new PortableChatSearchEngine();
+    </script>
+</body>
+</html>

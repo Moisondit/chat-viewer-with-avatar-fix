@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>头像路径修复工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f8f9fa;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .path-display {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.3s ease;
+        }
+        .avatar-preview {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .avatar-item {
+            text-align: center;
+        }
+        .avatar-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>聊天记录头像路径修复工具</h1>
+        
+        <div class="section info">
+            <h3>问题说明</h3>
+            <p>原始头像路径包含中文目录名，在浏览器中会被URL编码，导致无法显示图片。</p>
+            <div class="path-display">
+                原始路径：../生生[2137463976]/individual-image/2872215021-星如雨.jpg<br>
+                编码后：../%E7%94%9F%E7%94%9F[2137463976]/individual-image/2872215021-%E6%98%9F%E5%A6%82%E9%9B%A8.jpg
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>新头像预览</h3>
+            <div class="avatar-preview">
+                <div class="avatar-item">
+                    <img src="./avatars/2872215021-星如雨.svg" alt="星如雨" class="avatar-img">
+                    <div>星如雨</div>
+                </div>
+                <div class="avatar-item">
+                    <img src="./avatars/2137463976-生生.svg" alt="生生" class="avatar-img">
+                    <div>生生</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>修复操作</h3>
+            <button onclick="fixAllFiles()">修复所有聊天记录文件</button>
+            <button onclick="showFileList()">显示文件列表</button>
+            <button onclick="downloadFixedFiles()">下载修复后的文件</button>
+            
+            <div class="progress" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <div id="progressText">准备就绪</div>
+        </div>
+
+        <div class="section">
+            <h3>修复结果</h3>
+            <div id="fixResult">等待修复...</div>
+        </div>
+
+        <div class="section" id="fileListContainer" style="display: none;">
+            <h3>文件列表</h3>
+            <div class="file-list" id="fileList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 聊天记录文件列表
+        const chatFiles = [
+            'chat_2022_09_24.html', 'chat_2022_10_01.html', 'chat_2022_10_02.html',
+            'chat_2022_10_05.html', 'chat_2022_10_06.html', 'chat_2022_10_07.html',
+            'chat_2022_10_09.html', 'chat_2022_10_10.html', 'chat_2022_10_11.html',
+            'chat_2022_10_14.html', 'chat_2022_10_15.html', 'chat_2022_10_16.html',
+            'chat_2022_10_20.html', 'chat_2022_10_21.html', 'chat_2022_10_22.html',
+            'chat_2022_10_23.html', 'chat_2022_10_26.html', 'chat_2022_10_28.html',
+            'chat_2022_10_29.html', 'chat_2022_10_30.html', 'chat_2022_10_31.html',
+            'chat_2022_11_01.html', 'chat_2022_11_02.html', 'chat_2022_11_03.html',
+            'chat_2022_11_04.html', 'chat_2022_11_05.html', 'chat_2022_11_06.html',
+            'chat_2022_11_07.html', 'chat_2022_11_09.html', 'chat_2022_11_10.html',
+            'chat_2022_11_11.html', 'chat_2022_11_12.html', 'chat_2022_11_13.html',
+            'chat_2022_11_14.html', 'chat_2022_11_15.html', 'chat_2022_11_16.html',
+            'chat_2022_11_17.html', 'chat_2022_11_18.html', 'chat_2022_11_19.html',
+            'chat_2022_11_20.html', 'chat_2022_11_21.html', 'chat_2022_11_22.html',
+            'chat_2022_11_23.html', 'chat_2022_11_24.html', 'chat_2022_11_25.html',
+            'chat_2022_11_26.html', 'chat_2022_11_27.html', 'chat_2022_11_28.html',
+            'chat_2022_11_29.html', 'chat_2022_11_30.html', 'chat_2022_12_02.html',
+            'chat_2022_12_03.html', 'chat_2022_12_10.html', 'chat_2022_12_12.html',
+            'chat_2022_12_20.html', 'chat_2022_12_28.html', 'chat_2022_12_29.html',
+            'chat_2022_12_30.html', 'chat_2022_12_31.html', 'chat_2023_01_01.html',
+            'chat_2023_01_02.html', 'chat_2023_01_03.html', 'chat_2023_01_04.html',
+            'chat_2023_01_05.html', 'chat_2023_01_06.html', 'chat_2023_01_07.html'
+        ];
+
+        let fixedFiles = {};
+
+        // 显示文件列表
+        function showFileList() {
+            const container = document.getElementById('fileListContainer');
+            const list = document.getElementById('fileList');
+            
+            list.innerHTML = chatFiles.map(file => `<div>${file}</div>`).join('');
+            container.style.display = 'block';
+        }
+
+        // 修复所有文件
+        async function fixAllFiles() {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const resultDiv = document.getElementById('fixResult');
+            
+            progressContainer.style.display = 'block';
+            resultDiv.innerHTML = '<div>开始修复文件...</div>';
+            
+            let fixedCount = 0;
+            let errorCount = 0;
+            
+            for (let i = 0; i < chatFiles.length; i++) {
+                const file = chatFiles[i];
+                progressText.textContent = `正在修复: ${file} (${i + 1}/${chatFiles.length})`;
+                progressBar.style.width = `${((i + 1) / chatFiles.length) * 100}%`;
+                
+                try {
+                    // 读取文件内容
+                    const response = await fetch(file);
+                    if (!response.ok) {
+                        throw new Error(`无法读取文件: ${file}`);
+                    }
+                    
+                    let content = await response.text();
+                    
+                    // 替换头像路径
+                    const oldPath1 = '../生生[2137463976]/individual-image/2872215021-星如雨.jpg';
+                    const oldPath2 = '../生生[2137463976]/individual-image/2137463976-生生.jpg';
+                    const newPath1 = './avatars/2872215021-星如雨.svg';
+                    const newPath2 = './avatars/2137463976-生生.svg';
+                    
+                    content = content.replace(new RegExp(oldPath1.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newPath1);
+                    content = content.replace(new RegExp(oldPath2.replace(/[.*+?^${}()]/g, '\\$&'), 'g'), newPath2);
+                    
+                    // 保存修复后的内容
+                    fixedFiles[file] = content;
+                    fixedCount++;
+                    
+                } catch (error) {
+                    console.error(`修复文件 ${file} 时出错:`, error);
+                    errorCount++;
+                }
+                
+                // 让UI有时间更新
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            progressText.textContent = '修复完成！';
+            resultDiv.innerHTML = `
+                <div class="success">
+                    <h4>修复完成</h4>
+                    <p>✓ 成功修复: ${fixedCount} 个文件</p>
+                    <p>✗ 修复失败: ${errorCount} 个文件</p>
+                    <p>头像路径已更新为: ./avatars/</p>
+                    <button onclick="downloadFixedFiles()">下载修复后的文件</button>
+                </div>
+            `;
+        }
+
+        // 下载修复后的文件
+        function downloadFixedFiles() {
+            const resultDiv = document.getElementById('fixResult');
+            
+            if (Object.keys(fixedFiles).length === 0) {
+                resultDiv.innerHTML += '<div style="color: red;">请先修复文件！</div>';
+                return;
+            }
+            
+            // 创建一个ZIP文件（这里简化为逐个下载）
+            for (const [filename, content] of Object.entries(fixedFiles)) {
+                const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // 避免同时下载太多文件，添加延迟
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            resultDiv.innerHTML += '<div style="color: green;">文件下载已开始！</div>';
+        }
+
+        // 页面加载时检查头像
+        window.onload = function() {
+            // 检查新头像是否能正常显示
+            const avatar1 = new Image();
+            const avatar2 = new Image();
+            
+            avatar1.onload = function() {
+                console.log('星如雨头像加载成功');
+            };
+            avatar1.onerror = function() {
+                console.error('星如雨头像加载失败');
+            };
+            avatar1.src = './avatars/2872215021-星如雨.svg';
+            
+            avatar2.onload = function() {
+                console.log('生生头像加载成功');
+            };
+            avatar2.onerror = function() {
+                console.error('生生头像加载失败');
+            };
+            avatar2.src = './avatars/2137463976-生生.svg';
+        };
+    </script>
+</body>
+</html>

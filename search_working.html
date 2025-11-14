@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天记录搜索 - 实时进度版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .filter-select, .btn {
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .filter-select:focus {
+            border-color: #4facfe;
+        }
+
+        .btn {
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .progress-section {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .results-section {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .results-stats {
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #4facfe;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-sender {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .result-content {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .result-file {
+            font-size: 12px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .media-type {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .media-type.text {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .media-type.image {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .media-type.emoji {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .media-type.video {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .media-type.audio {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .media-type.sticker {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-results i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #e9ecef;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .search-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 聊天记录搜索</h1>
+            <p>实时搜索所有聊天记录，支持文本、图片、表情等多种内容</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-controls">
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" class="search-input" placeholder="输入搜索关键词...">
+                </div>
+                <select id="senderFilter" class="filter-select">
+                    <option value="">所有发送者</option>
+                    <option value="生生">生生</option>
+                    <option value="星如雨">星如雨</option>
+                </select>
+                <select id="mediaFilter" class="filter-select">
+                    <option value="">所有类型</option>
+                    <option value="text">文本</option>
+                    <option value="image">图片</option>
+                    <option value="emoji">表情</option>
+                    <option value="video">视频</option>
+                    <option value="audio">音频</option>
+                    <option value="sticker">贴纸</option>
+                </select>
+                <button id="searchBtn" class="btn btn-primary">搜索</button>
+                <button id="cancelBtn" class="btn btn-secondary" style="display: none;">取消</button>
+            </div>
+        </div>
+
+        <div id="progressSection" class="progress-section">
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progressText">正在搜索中...</span>
+                <span id="progressStats">0 / 0</span>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <div class="results-stats">
+                    <span id="resultsCount">共找到 0 条结果</span>
+                </div>
+            </div>
+            <div id="resultsContainer" class="results-grid">
+                <div class="no-results">
+                    <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">🔍</div>
+                    <h3>输入关键词开始搜索</h3>
+                    <p>支持搜索文本内容、图片描述、表情符号等</p>
+                </div>
+            </div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let allFiles = [];
+        let searchResults = [];
+        let currentPage = 1;
+        const resultsPerPage = 20;
+        let searchController = null;
+        let isSearching = false;
+
+        // 初始化文件列表
+        function initializeFileList() {
+            // 完整的文件列表（从2022年到2025年）
+            allFiles = [
+                { url: 'Data/chat_2022_09_24.html', date: '2022-09-24' },
+                { url: 'Data/chat_2022_10_01.html', date: '2022-10-01' },
+                { url: 'Data/chat_2022_10_02.html', date: '2022-10-02' },
+                { url: 'Data/chat_2022_10_05.html', date: '2022-10-05' },
+                { url: 'Data/chat_2022_10_06.html', date: '2022-10-06' },
+                { url: 'Data/chat_2022_10_07.html', date: '2022-10-07' },
+                { url: 'Data/chat_2022_10_09.html', date: '2022-10-09' },
+                { url: 'Data/chat_2022_10_10.html', date: '2022-10-10' },
+                { url: 'Data/chat_2022_10_11.html', date: '2022-10-11' },
+                { url: 'Data/chat_2022_10_14.html', date: '2022-10-14' },
+                { url: 'Data/chat_2022_10_15.html', date: '2022-10-15' },
+                { url: 'Data/chat_2022_10_16.html', date: '2022-10-16' },
+                { url: 'Data/chat_2022_10_20.html', date: '2022-10-20' },
+                { url: 'Data/chat_2022_10_21.html', date: '2022-10-21' },
+                { url: 'Data/chat_2022_10_22.html', date: '2022-10-22' },
+                { url: 'Data/chat_2022_10_23.html', date: '2022-10-23' },
+                { url: 'Data/chat_2022_10_26.html', date: '2022-10-26' },
+                { url: 'Data/chat_2022_10_28.html', date: '2022-10-28' },
+                { url: 'Data/chat_2022_10_29.html', date: '2022-10-29' },
+                { url: 'Data/chat_2022_10_30.html', date: '2022-10-30' },
+                { url: 'Data/chat_2022_10_31.html', date: '2022-10-31' },
+                { url: 'Data/chat_2022_11_01.html', date: '2022-11-01' },
+                { url: 'Data/chat_2022_11_02.html', date: '2022-11-02' },
+                { url: 'Data/chat_2022_11_03.html', date: '2022-11-03' },
+                { url: 'Data/chat_2022_11_04.html', date: '2022-11-04' },
+                { url: 'Data/chat_2022_11_05.html', date: '2022-11-05' },
+                { url: 'Data/chat_2022_11_06.html', date: '2022-11-06' },
+                { url: 'Data/chat_2022_11_07.html', date: '2022-11-07' },
+                { url: 'Data/chat_2022_11_09.html', date: '2022-11-09' },
+                { url: 'Data/chat_2022_11_10.html', date: '2022-11-10' },
+                { url: 'Data/chat_2022_11_11.html', date: '2022-11-11' },
+                { url: 'Data/chat_2022_11_12.html', date: '2022-11-12' },
+                { url: 'Data/chat_2022_11_13.html', date: '2022-11-13' },
+                { url: 'Data/chat_2022_11_14.html', date: '2022-11-14' },
+                { url: 'Data/chat_2022_11_15.html', date: '2022-11-15' },
+                { url: 'Data/chat_2022_11_16.html', date: '2022-11-16' },
+                { url: 'Data/chat_2022_11_17.html', date: '2022-11-17' },
+                { url: 'Data/chat_2022_11_18.html', date: '2022-11-18' },
+                { url: 'Data/chat_2022_11_19.html', date: '2022-11-19' },
+                { url: 'Data/chat_2022_11_20.html', date: '2022-11-20' },
+                { url: 'Data/chat_2022_11_21.html', date: '2022-11-21' },
+                { url: 'Data/chat_2022_11_22.html', date: '2022-11-22' },
+                { url: 'Data/chat_2022_11_23.html', date: '2022-11-23' },
+                { url: 'Data/chat_2022_11_24.html', date: '2022-11-24' },
+                { url: 'Data/chat_2022_11_25.html', date: '2022-11-25' },
+                { url: 'Data/chat_2022_11_26.html', date: '2022-11-26' },
+                { url: 'Data/chat_2022_11_27.html', date: '2022-11-27' },
+                { url: 'Data/chat_2022_11_28.html', date: '2022-11-28' },
+                { url: 'Data/chat_2022_11_29.html', date: '2022-11-29' },
+                { url: 'Data/chat_2022_11_30.html', date: '2022-11-30' },
+                { url: 'Data/chat_2022_12_02.html', date: '2022-12-02' },
+                { url: 'Data/chat_2022_12_03.html', date: '2022-12-03' },
+                { url: 'Data/chat_2022_12_10.html', date: '2022-12-10' },
+                { url: 'Data/chat_2022_12_12.html', date: '2022-12-12' },
+                { url: 'Data/chat_2022_12_20.html', date: '2022-12-20' },
+                { url: 'Data/chat_2022_12_28.html', date: '2022-12-28' },
+                { url: 'Data/chat_2022_12_29.html', date: '2022-12-29' },
+                { url: 'Data/chat_2022_12_30.html', date: '2022-12-30' },
+                { url: 'Data/chat_2022_12_31.html', date: '2022-12-31' },
+                { url: 'Data/chat_2023_01_01.html', date: '2023-01-01' },
+                { url: 'Data/chat_2023_01_02.html', date: '2023-01-02' },
+                { url: 'Data/chat_2023_01_03.html', date: '2023-01-03' },
+                { url: 'Data/chat_2023_01_04.html', date: '2023-01-04' },
+                { url: 'Data/chat_2023_01_05.html', date: '2023-01-05' },
+                { url: 'Data/chat_2023_01_06.html', date: '2023-01-06' },
+                { url: 'Data/chat_2023_01_07.html', date: '2023-01-07' },
+                { url: 'Data/chat_2023_01_08.html', date: '2023-01-08' },
+                { url: 'Data/chat_2023_01_09.html', date: '2023-01-09' },
+                { url: 'Data/chat_2023_01_10.html', date: '2023-01-10' },
+                { url: 'Data/chat_2023_01_11.html', date: '2023-01-11' },
+                { url: 'Data/chat_2023_01_12.html', date: '2023-01-12' },
+                { url: 'Data/chat_2023_01_13.html', date: '2023-01-13' },
+                { url: 'Data/chat_2023_01_14.html', date: '2023-01-14' },
+                { url: 'Data/chat_2025_09_28.html', date: '2025-09-28' }
+            ];
+        }
+
+        // 解析单个聊天文件
+        async function parseChatFile(fileUrl) {
+            try {
+                const response = await fetch(fileUrl);
+                if (!response.ok) {
+                    console.warn(`无法加载文件: ${fileUrl}`);
+                    return [];
+                }
+                
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const messages = [];
+                
+                // 查找所有消息容器
+                const messageElements = doc.querySelectorAll('.message');
+                
+                messageElements.forEach((message, index) => {
+                    try {
+                        // 获取发送者信息
+                        const senderElement = message.querySelector('.message-header .sender');
+                        const sender = senderElement ? senderElement.textContent.trim() : '未知';
+                        
+                        // 获取时间信息
+                        const timeElement = message.querySelector('.message-header .time');
+                        const time = timeElement ? timeElement.textContent.trim() : '';
+                        
+                        // 获取消息内容
+                        const contentElement = message.querySelector('.message-content');
+                        let content = '';
+                        let mediaType = 'text';
+                        
+                        if (contentElement) {
+                            // 获取所有文本内容，包括图片alt文本
+                            const textParts = [];
+                            contentElement.querySelectorAll('*').forEach(el => {
+                                if (el.nodeType === Node.TEXT_NODE) {
+                                    textParts.push(el.textContent);
+                                } else if (el.tagName === 'IMG') {
+                                    // 图片文件，记录alt文本和src
+                                    const alt = el.getAttribute('alt') || '';
+                                    const src = el.getAttribute('src') || '';
+                                    if (alt) textParts.push(alt);
+                                    mediaType = 'image';
+                                } else if (el.tagName === 'VIDEO') {
+                                    mediaType = 'video';
+                                } else if (el.tagName === 'AUDIO') {
+                                    mediaType = 'audio';
+                                } else if (el.classList && el.classList.contains('sticker')) {
+                                    mediaType = 'sticker';
+                                } else {
+                                    // 其他元素，获取其文本内容
+                                    textParts.push(el.textContent);
+                                }
+                            });
+                            
+                            content = textParts.join(' ').trim();
+                            
+                            // 如果内容为空但有媒体元素，使用媒体类型作为内容
+                            if (!content && mediaType !== 'text') {
+                                content = `[${mediaType}]`;
+                            }
+                        }
+                        
+                        // 只有内容不为空才添加到结果中
+                        if (content && content.length > 0) {
+                            messages.push({
+                                sender: sender,
+                                time: time,
+                                content: content,
+                                mediaType: mediaType,
+                                fileUrl: fileUrl,
+                                messageId: `${fileUrl}_${index}`
+                            });
+                        }
+                    } catch (messageError) {
+                        console.warn(`解析消息时出错: ${messageError.message}`);
+                    }
+                });
+                
+                return messages;
+            } catch (error) {
+                console.error(`解析文件 ${fileUrl} 时出错:`, error);
+                return [];
+            }
+        }
+
+        // 执行搜索（带实时进度）
+        async function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            const senderFilter = document.getElementById('senderFilter').value;
+            const mediaFilter = document.getElementById('mediaFilter').value;
+            
+            if (!searchTerm) {
+                alert('请输入搜索关键词');
+                return;
+            }
+
+            // 创建新的AbortController
+            searchController = new AbortController();
+            isSearching = true;
+            
+            // 更新UI状态
+            document.getElementById('searchBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+            document.getElementById('progressSection').classList.add('active');
+            document.getElementById('resultsContainer').innerHTML = '<div class="loading"><div class="spinner"></div>正在搜索中...</div>';
+            
+            // 清空之前的结果
+            searchResults = [];
+            currentPage = 1;
+            
+            // 过滤文件
+            const filteredFiles = allFiles.filter(file => {
+                if (senderFilter && mediaFilter) {
+                    return true; // 如果两个都有值，不过滤文件
+                }
+                return true;
+            });
+            
+            let processedFiles = 0;
+            let totalFiles = filteredFiles.length;
+            let foundResults = 0;
+            
+            // 逐个文件搜索，实时更新结果
+            for (let i = 0; i < filteredFiles.length; i++) {
+                if (searchController.signal.aborted) {
+                    break;
+                }
+                
+                const file = filteredFiles[i];
+                
+                try {
+                    const messages = await parseChatFile(file.url);
+                    
+                    // 在当前文件中搜索
+                    const fileResults = messages.filter(message => {
+                        // 检查搜索词
+                        const contentMatch = message.content.toLowerCase().includes(searchTerm.toLowerCase());
+                        
+                        // 检查发送者过滤
+                        const senderMatch = !senderFilter || message.sender === senderFilter;
+                        
+                        // 检查媒体类型过滤
+                        const mediaMatch = !mediaFilter || message.mediaType === mediaFilter;
+                        
+                        return contentMatch && senderMatch && mediaMatch;
+                    });
+                    
+                    // 添加文件信息到结果
+                    fileResults.forEach(result => {
+                        result.fileName = file.url;
+                        result.fileDate = file.date;
+                    });
+                    
+                    // 实时添加到结果中
+                    searchResults.push(...fileResults);
+                    foundResults += fileResults.length;
+                    
+                    // 更新进度
+                    processedFiles++;
+                    const progress = (processedFiles / totalFiles) * 100;
+                    
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressText').textContent = `正在搜索: ${file.url}`;
+                    document.getElementById('progressStats').textContent = `${processedFiles} / ${totalFiles} (找到 ${foundResults} 条)`;
+                    
+                    // 实时更新结果显示
+                    if (fileResults.length > 0) {
+                        updateResultsDisplay();
+                    }
+                    
+                } catch (error) {
+                    console.error(`搜索文件 ${file.url} 时出错:`, error);
+                }
+                
+                // 给UI一个更新的机会
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            // 搜索完成
+            isSearching = false;
+            document.getElementById('searchBtn').style.display = 'inline-block';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('progressBar').style.width = '100%';
+            document.getElementById('progressText').textContent = '搜索完成！';
+            
+            // 最终更新结果
+            updateResultsDisplay();
+            
+            // 3秒后隐藏进度条
+            setTimeout(() => {
+                document.getElementById('progressSection').classList.remove('active');
+            }, 3000);
+        }
+
+        // 取消搜索
+        function cancelSearch() {
+            if (searchController) {
+                searchController.abort();
+                isSearching = false;
+                document.getElementById('searchBtn').style.display = 'inline-block';
+                document.getElementById('cancelBtn').style.display = 'none';
+                document.getElementById('progressSection').classList.remove('active');
+                document.getElementById('progressText').textContent = '搜索已取消';
+            }
+        }
+
+        // 更新结果显示
+        function updateResultsDisplay() {
+            const container = document.getElementById('resultsContainer');
+            const countElement = document.getElementById('resultsCount');
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            
+            // 更新统计信息
+            countElement.textContent = `共找到 ${searchResults.length} 条结果`;
+            
+            if (searchResults.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">😔</div>
+                        <h3>没有找到相关结果</h3>
+                        <p>尝试使用不同的关键词或调整筛选条件</p>
+                    </div>
+                `;
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            // 计算分页
+            const totalPages = Math.ceil(searchResults.length / resultsPerPage);
+            const startIndex = (currentPage - 1) * resultsPerPage;
+            const endIndex = Math.min(startIndex + resultsPerPage, searchResults.length);
+            const pageResults = searchResults.slice(startIndex, endIndex);
+            
+            // 生成结果HTML
+            let resultsHTML = '';
+            pageResults.forEach(result => {
+                const highlightedContent = highlightSearchTerm(result.content, searchTerm);
+                resultsHTML += `
+                    <div class="result-item" onclick="openMessage('${result.fileUrl}', '${result.messageId}')">
+                        <div class="result-header">
+                            <div class="result-sender">
+                                ${result.sender}
+                                <span class="media-type ${result.mediaType}">${getMediaTypeName(result.mediaType)}</span>
+                            </div>
+                            <div class="result-time">${result.time}</div>
+                        </div>
+                        <div class="result-content">${highlightedContent}</div>
+                        <div class="result-file">📁 ${result.fileName} | 📅 ${result.fileDate}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = resultsHTML;
+            
+            // 更新分页
+            updatePagination(totalPages);
+        }
+
+        // 高亮搜索词
+        function highlightSearchTerm(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        // 获取媒体类型名称
+        function getMediaTypeName(mediaType) {
+            const typeNames = {
+                'text': '文本',
+                'image': '图片',
+                'emoji': '表情',
+                'video': '视频',
+                'audio': '音频',
+                'sticker': '贴纸'
+            };
+            return typeNames[mediaType] || '未知';
+        }
+
+        // 更新分页控件
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // 上一页按钮
+            paginationHTML += `
+                <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">
+                    上一页
+                </button>
+            `;
+            
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<span>...</span>';
+                }
+            }
+            
+            // 下一页按钮
+            paginationHTML += `
+                <button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">
+                    下一页
+                </button>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // 切换页面
+        function changePage(page) {
+            currentPage = page;
+            updateResultsDisplay();
+            
+            // 滚动到结果区域
+            document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 打开消息（跳转到对应位置）
+        function openMessage(fileUrl, messageId) {
+            // 构建完整的URL
+            const fullUrl = fileUrl + '#' + messageId;
+            window.open(fullUrl, '_blank');
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索按钮
+            document.getElementById('searchBtn').addEventListener('click', performSearch);
+            
+            // 取消按钮
+            document.getElementById('cancelBtn').addEventListener('click', cancelSearch);
+            
+            // 回车搜索
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !isSearching) {
+                    performSearch();
+                }
+            });
+            
+            // 筛选条件变化时自动搜索
+            document.getElementById('senderFilter').addEventListener('change', function() {
+                if (document.getElementById('searchInput').value.trim() && !isSearching) {
+                    performSearch();
+                }
+            });
+            
+            document.getElementById('mediaFilter').addEventListener('change', function() {
+                if (document.getElementById('searchInput').value.trim() && !isSearching) {
+                    performSearch();
+                }
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileList();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>

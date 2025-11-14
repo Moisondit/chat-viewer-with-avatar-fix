@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单搜索测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .search-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .debug {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>简单搜索测试</h1>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="输入搜索关键词...">
+            <button id="searchBtn" class="search-btn">搜索</button>
+        </div>
+        
+        <div id="debugSection" class="debug">
+            调试信息将在这里显示...
+        </div>
+        
+        <div id="resultsSection" class="results">
+            <p>请输入关键词开始搜索</p>
+        </div>
+    </div>
+
+    <!-- 隐藏的iframe -->
+    <iframe id="hiddenFrame" class="hidden"></iframe>
+
+    <script>
+        // 测试文件列表
+        const testFiles = [
+            'Data/chat_2023_01_01.html',
+            'Data/chat_2023_01_02.html',
+            'Data/chat_2023_01_03.html'
+        ];
+
+        function debugLog(message) {
+            const debugSection = document.getElementById('debugSection');
+            const timestamp = new Date().toLocaleTimeString();
+            debugSection.innerHTML += `[${timestamp}] ${message}\n`;
+            debugSection.scrollTop = debugSection.scrollHeight;
+            console.log(message);
+        }
+
+        // 测试单个文件加载
+        async function testSingleFile(fileUrl) {
+            debugLog(`开始测试文件: ${fileUrl}`);
+            
+            return new Promise((resolve) => {
+                const iframe = document.getElementById('hiddenFrame');
+                
+                iframe.onload = function() {
+                    debugLog(`文件加载成功: ${fileUrl}`);
+                    try {
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        debugLog(`文档标题: ${doc.title}`);
+                        
+                        // 尝试获取消息
+                        const messages = doc.querySelectorAll('.message');
+                        debugLog(`找到 ${messages.length} 条消息`);
+                        
+                        if (messages.length > 0) {
+                            const firstMessage = messages[0];
+                            const sender = firstMessage.querySelector('.sender-name');
+                            const content = firstMessage.querySelector('.message-content');
+                            
+                            if (sender && content) {
+                                debugLog(`第一条消息: ${sender.textContent.trim()} - ${content.textContent.trim().substring(0, 50)}...`);
+                                resolve([{sender: sender.textContent.trim(), content: content.textContent.trim()}]);
+                            } else {
+                                debugLog('消息结构不完整');
+                                resolve([]);
+                            }
+                        } else {
+                            debugLog('未找到消息元素');
+                            resolve([]);
+                        }
+                    } catch (e) {
+                        debugLog(`解析文档时出错: ${e.message}`);
+                        resolve([]);
+                    }
+                };
+                
+                iframe.onerror = function() {
+                    debugLog(`文件加载失败: ${fileUrl}`);
+                    resolve([]);
+                };
+                
+                iframe.src = fileUrl;
+            });
+        }
+
+        // 执行搜索
+        async function performSearch() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) {
+                alert('请输入搜索关键词');
+                return;
+            }
+            
+            debugLog(`开始搜索关键词: "${keyword}"`);
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = '<p>正在搜索中...</p>';
+            
+            let allResults = [];
+            
+            // 逐个测试文件
+            for (const fileUrl of testFiles) {
+                const messages = await testSingleFile(fileUrl);
+                
+                // 搜索匹配的消息
+                const matchingMessages = messages.filter(msg => 
+                    msg.content.toLowerCase().includes(keyword.toLowerCase())
+                );
+                
+                matchingMessages.forEach(msg => {
+                    allResults.push({
+                        ...msg,
+                        file: fileUrl
+                    });
+                });
+                
+                // 添加延迟避免浏览器阻塞
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // 显示结果
+            debugLog(`搜索完成，找到 ${allResults.length} 条结果`);
+            
+            if (allResults.length === 0) {
+                resultsSection.innerHTML = '<p>没有找到匹配的结果</p>';
+            } else {
+                const resultsHtml = allResults.map(result => `
+                    <div class="result-item">
+                        <strong>${result.sender}:</strong> ${result.content}
+                        <br><small>文件: ${result.file}</small>
+                    </div>
+                `).join('');
+                resultsSection.innerHTML = resultsHtml;
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('页面加载完成');
+            
+            // 绑定事件
+            document.getElementById('searchBtn').addEventListener('click', performSearch);
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            debugLog(`准备测试 ${testFiles.length} 个文件`);
+        });
+    </script>
+</body>
+</html>

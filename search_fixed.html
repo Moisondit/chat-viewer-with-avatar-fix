@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天记录搜索</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 60px 20px 20px;
+            font-size: 1.2em;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .filter-group {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #667eea;
+        }
+
+        .results-section {
+            padding: 0 40px 40px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .results-count {
+            font-size: 1.1em;
+            color: #495057;
+        }
+
+        .results-count strong {
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .result-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .result-date {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .result-time {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .result-sender {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .sender-shengsheng {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .sender-user {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .result-content {
+            padding: 20px;
+        }
+
+        .result-text {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-results-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .quick-filters {
+            margin-bottom: 20px;
+        }
+
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-tag {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tag:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 聊天记录搜索</h1>
+            <p>搜索所有聊天记录，支持关键词、日期、发送者筛选</p>
+        </header>
+
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="输入搜索关键词...">
+                <button class="search-button" id="searchButton">🔍</button>
+            </div>
+            
+            <div class="quick-filters">
+                <div class="filter-group">
+                    <label>快速筛选</label>
+                    <div class="filter-tags">
+                        <span class="filter-tag" data-filter="图片">🖼️ 图片</span>
+                        <span class="filter-tag" data-filter="文件">📎 文件</span>
+                        <span class="filter-tag" data-filter="语音">🎵 语音</span>
+                        <span class="filter-tag" data-filter="视频">🎥 视频</span>
+                        <span class="filter-tag" data-filter="链接">🔗 链接</span>
+                        <span class="filter-tag" data-filter="表情">😊 表情</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="startDate">开始日期</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label for="endDate">结束日期</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label for="senderFilter">发送者</label>
+                    <select id="senderFilter">
+                        <option value="">全部</option>
+                        <option value="shengsheng">生生</option>
+                        <option value="user">用户</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="messageType">消息类型</label>
+                    <select id="messageType">
+                        <option value="">全部</option>
+                        <option value="text">文本消息</option>
+                        <option value="image">图片</option>
+                        <option value="file">文件</option>
+                        <option value="voice">语音</option>
+                        <option value="video">视频</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <div class="results-header">
+                <div class="results-count">
+                    找到 <strong id="resultsCount">0</strong> 条结果
+                </div>
+            </div>
+            <div id="searchResults">
+                <div class="no-results">
+                    <div class="no-results-icon">🔍</div>
+                    <h3>开始搜索聊天记录</h3>
+                    <p>输入关键词并选择筛选条件来搜索聊天记录</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 全局变量
+        let allChatFiles = [];
+        let currentResults = [];
+        let isSearching = false;
+
+        // 聊天文件列表
+        const fileDates = [
+            // 2022年
+            '2022_09_24', '2022_10_01', '2022_10_02', '2022_10_05', '2022_10_06', '2022_10_07',
+            '2022_10_09', '2022_10_10', '2022_10_11', '2022_10_14', '2022_10_15', '2022_10_16',
+            '2022_10_20', '2022_10_21', '2022_10_22', '2022_10_23', '2022_10_26', '2022_10_28',
+            '2022_10_29', '2022_10_30', '2022_10_31', '2022_11_01', '2022_11_02', '2022_11_03',
+            '2022_11_04', '2022_11_05', '2022_11_06', '2022_11_07', '2022_11_09', '2022_11_10',
+            '2022_11_11', '2022_11_12', '2022_11_13', '2022_11_14', '2022_11_15', '2022_11_16',
+            '2022_11_17', '2022_11_18', '2022_11_19', '2022_11_20', '2022_11_21', '2022_11_22',
+            '2022_11_23', '2022_11_24', '2022_11_25', '2022_11_26', '2022_11_27', '2022_11_28',
+            '2022_11_29', '2022_11_30', '2022_12_02', '2022_12_03', '2022_12_10', '2022_12_12',
+            '2022_12_20', '2022_12_28', '2022_12_29', '2022_12_30', '2022_12_31',
+            // 2023年（部分示例）
+            '2023_01_01', '2023_01_02', '2023_01_03', '2023_01_04', '2023_01_05', '2023_01_06',
+            '2023_01_07', '2023_01_08', '2023_01_09', '2023_01_10', '2023_01_11', '2023_01_12',
+            '2023_01_13', '2023_01_14', '2023_01_15', '2023_01_16', '2023_01_17', '2023_01_18',
+            '2023_01_19', '2023_01_20', '2023_01_21', '2023_01_22', '2023_01_23', '2023_01_24',
+            '2023_01_25', '2023_01_26', '2023_01_27', '2023_02_01', '2023_02_02', '2023_02_03',
+            '2023_02_04', '2023_02_05', '2023_02_06', '2023_02_07', '2023_02_08', '2023_02_09',
+            '2023_02_10', '2023_02_11', '2023_02_12', '2023_02_13', '2023_02_14', '2023_02_15',
+            '2023_02_16', '2023_02_17', '2023_02_18', '2023_02_19', '2023_02_20', '2023_02_21',
+            '2023_02_22', '2023_02_23', '2023_02_24', '2023_02_25', '2023_02_26', '2023_02_27',
+            '2023_02_28', '2023_03_01', '2023_03_02', '2023_03_03', '2023_03_04', '2023_03_05',
+            '2023_03_06', '2023_03_07', '2023_03_08', '2023_03_09', '2023_03_10', '2023_03_11',
+            '2023_03_12', '2023_03_13', '2023_03_14', '2023_03_15', '2023_03_16', '2023_03_17',
+            '2023_03_18', '2023_03_19', '2023_03_20', '2023_03_21', '2023_03_22', '2023_03_23',
+            '2023_03_24', '2023_03_25', '2023_03_26', '2023_03_27', '2023_03_28', '2023_03_29',
+            '2023_03_30', '2023_03_31', '2023_04_01', '2023_04_02', '2023_04_03', '2023_04_04',
+            '2023_04_05', '2023_04_06', '2023_04_07', '2023_04_08', '2023_04_09', '2023_04_10',
+            '2023_04_11', '2023_04_12', '2023_04_13', '2023_04_14', '2023_04_15', '2023_04_16',
+            '2023_04_17', '2023_04_18', '2023_04_19', '2023_04_20', '2023_04_21', '2023_04_22',
+            '2023_04_23', '2023_04_24', '2023_04_25', '2023_04_26', '2023_04_27', '2023_04_28',
+            '2023_04_29', '2023_04_30', '2023_05_01', '2023_05_02', '2023_05_03', '2023_05_04',
+            '2023_05_05', '2023_05_06', '2023_05_07', '2023_05_08', '2023_05_09', '2023_05_10',
+            '2023_05_11', '2023_05_12', '2023_05_13', '2023_05_14', '2023_05_15', '2023_05_16',
+            '2023_05_17', '2023_05_18', '2023_05_19', '2023_05_20', '2023_05_21', '2023_05_22',
+            '2023_05_23', '2023_05_24', '2023_05_25', '2023_05_26', '2023_05_27', '2023_05_28',
+            '2023_05_29', '2023_05_30', '2023_05_31', '2023_09_01', '2023_09_02', '2023_09_03',
+            '2023_09_04', '2023_09_05', '2023_09_06', '2023_09_07', '2023_09_08', '2023_09_09',
+            '2023_09_10', '2023_09_11', '2023_09_12', '2023_09_13', '2023_09_14', '2023_09_15',
+            '2023_09_16', '2023_09_17', '2023_09_18', '2023_09_19', '2023_09_20', '2023_09_21',
+            '2023_09_22', '2023_09_23', '2023_09_24', '2023_09_25', '2023_09_26', '2023_09_27',
+            '2023_09_28', '2023_09_29', '2023_09_30', '2023_10_01', '2023_10_02', '2023_10_03',
+            '2023_10_04', '2023_10_05', '2023_10_06', '2023_10_07', '2023_10_08', '2023_10_09',
+            '2023_10_10', '2023_10_11', '2023_10_12', '2023_10_13', '2023_10_14', '2023_10_15',
+            '2023_10_16', '2023_10_17', '2023_10_18', '2023_10_19', '2023_10_20', '2023_10_21',
+            '2023_10_22', '2023_10_23', '2023_10_24', '2023_10_25', '2023_10_26', '2023_10_27',
+            '2023_10_28', '2023_10_29', '2023_10_30', '2023_10_31'
+        ];
+
+        // 初始化文件列表
+        function initializeFileList() {
+            allChatFiles = [];
+            
+            // 生成2022年和2023年的聊天文件列表
+            const years = [2022, 2023];
+            
+            years.forEach(year => {
+                for (let month = 1; month <= 12; month++) {
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateStr = `${year}_${month.toString().padStart(2, '0')}_${day.toString().padStart(2, '0')}`;
+                        allChatFiles.push({
+                            filename: `chat_${dateStr}.html`,
+                            date: dateStr,
+                            url: `Data/chat_${dateStr}.html`
+                        });
+                    }
+                }
+            });
+            
+            console.log(`已加载 ${allChatFiles.length} 个聊天文件`);
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>正在搜索中...</p>
+                </div>
+            `;
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="error">
+                    <p>❌ ${message}</p>
+                </div>
+            `;
+        }
+
+        // 清空结果
+        function clearResults() {
+            document.getElementById('searchResults').innerHTML = `
+                <div class="no-results">
+                    <div class="no-results-icon">🔍</div>
+                    <h3>开始搜索聊天记录</h3>
+                    <p>输入关键词并选择筛选条件来搜索聊天记录</p>
+                </div>
+            `;
+            document.getElementById('resultsCount').textContent = '0';
+        }
+
+        // 高亮搜索关键词
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return text;
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            return dateStr.replace(/_/g, '-');
+        }
+
+        // 筛选文件
+        function filterFiles(files, startDate, endDate) {
+            return files.filter(file => {
+                if (startDate && file.date < startDate.replace(/-/g, '_')) return false;
+                if (endDate && file.date > endDate.replace(/-/g, '_')) return false;
+                return true;
+            });
+        }
+
+        // 在单个文件中搜索
+        async function searchInFile(file, searchTerm, senderFilter, messageType) {
+            try {
+                const response = await fetch(file.url);
+                if (!response.ok) {
+                    console.warn(`无法加载文件: ${file.url}`);
+                    return [];
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                const messages = doc.querySelectorAll('.message');
+                const results = [];
+
+                messages.forEach(message => {
+                    const messageContent = message.querySelector('.message-content');
+                    if (!messageContent) return;
+                    
+                    const messageText = messageContent.textContent || messageContent.innerText || '';
+                    const senderElement = message.querySelector('.sender');
+                    const timeElement = message.querySelector('.time');
+                    const sender = senderElement ? senderElement.textContent : '';
+                    const time = timeElement ? timeElement.textContent : '';
+                    
+                    // 检查发送者筛选
+                    if (senderFilter) {
+                        const isShengsheng = message.classList.contains('shengsheng-message');
+                        const isUser = message.classList.contains('user-message');
+                        
+                        if (senderFilter === 'shengsheng' && !isShengsheng) return;
+                        if (senderFilter === 'user' && !isUser) return;
+                    }
+
+                    // 检查消息类型
+                    if (messageType) {
+                        const hasImage = message.querySelector('img[src*=".jpg"], img[src*=".png"], img[src*=".gif"], img[src*=".jpeg"]');
+                        const hasFile = message.querySelector('a[href*=".pdf"], a[href*=".doc"], a[href*=".zip"], a[href*=".txt"]');
+                        const hasVoice = message.querySelector('audio, .voice-message');
+                        const hasVideo = message.querySelector('video, .video-message');
+                        
+                        switch(messageType) {
+                            case 'image':
+                                if (!hasImage) return;
+                                break;
+                            case 'file':
+                                if (!hasFile) return;
+                                break;
+                            case 'voice':
+                                if (!hasVoice) return;
+                                break;
+                            case 'video':
+                                if (!hasVideo) return;
+                                break;
+                            case 'text':
+                                if (hasImage || hasFile || hasVoice || hasVideo) return;
+                                break;
+                        }
+                    }
+
+                    // 检查关键词匹配
+                    if (searchTerm && !messageText.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        return;
+                    }
+
+                    results.push({
+                        file: file,
+                        date: file.date,
+                        time: time,
+                        sender: sender,
+                        content: messageText,
+                        messageElement: message
+                    });
+                });
+
+                return results;
+            } catch (error) {
+                console.error(`搜索文件 ${file.url} 时出错:`, error);
+                return [];
+            }
+        }
+
+        // 显示搜索结果
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('searchResults');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            resultsCount.textContent = results.length;
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>未找到相关结果</h3>
+                        <p>尝试调整搜索关键词或筛选条件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            let html = '';
+
+            results.forEach(result => {
+                const senderClass = result.sender.includes('生生') ? 'sender-shengsheng' : 'sender-user';
+                const highlightedContent = highlightText(result.content, searchTerm);
+                
+                html += `
+                    <div class="result-item" onclick="openChatFile('${result.file.url}', '${result.time}')">
+                        <div class="result-header">
+                            <div class="result-date">${formatDate(result.date)}</div>
+                            <div class="result-time">${result.time}</div>
+                            <span class="result-sender ${senderClass}">${result.sender}</span>
+                        </div>
+                        <div class="result-content">
+                            <div class="result-text">${highlightedContent}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.innerHTML = html;
+        }
+
+        // 打开聊天文件
+        function openChatFile(fileUrl, time) {
+            window.open(fileUrl, '_blank');
+        }
+
+        // 执行搜索
+        async function performSearch() {
+            if (isSearching) return;
+            
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const senderFilter = document.getElementById('senderFilter').value;
+            const messageType = document.getElementById('messageType').value;
+
+            if (!searchTerm && !startDate && !endDate && !senderFilter && !messageType) {
+                clearResults();
+                return;
+            }
+
+            isSearching = true;
+            showLoading();
+
+            try {
+                // 筛选需要搜索的文件
+                const filesToSearch = filterFiles(allChatFiles, startDate, endDate);
+                console.log(`将在 ${filesToSearch.length} 个文件中搜索`);
+
+                // 并行搜索文件
+                const searchPromises = filesToSearch.map(file => 
+                    searchInFile(file, searchTerm, senderFilter, messageType)
+                );
+                const results = await Promise.all(searchPromises);
+
+                // 合并结果
+                currentResults = results.flat().sort((a, b) => {
+                    // 按日期和时间排序
+                    const dateCompare = b.date.localeCompare(a.date);
+                    if (dateCompare !== 0) return dateCompare;
+                    return b.time.localeCompare(a.time);
+                });
+
+                displayResults(currentResults);
+                console.log(`搜索完成，找到 ${currentResults.length} 条结果`);
+            } catch (error) {
+                console.error('搜索失败:', error);
+                showError('搜索失败，请重试');
+            } finally {
+                isSearching = false;
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            console.log('设置事件监听器...');
+            
+            // 搜索按钮点击事件
+            const searchButton = document.getElementById('searchButton');
+            if (searchButton) {
+                searchButton.addEventListener('click', performSearch);
+                console.log('✅ 搜索按钮事件已绑定');
+            } else {
+                console.error('❌ 未找到搜索按钮');
+            }
+
+            // 搜索框回车事件
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+                console.log('✅ 搜索框回车事件已绑定');
+            } else {
+                console.error('❌ 未找到搜索框');
+            }
+
+            // 筛选条件变化事件
+            const filterElements = ['startDate', 'endDate', 'senderFilter', 'messageType'];
+            filterElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', performSearch);
+                }
+            });
+            console.log('✅ 筛选条件事件已绑定');
+
+            // 快速筛选标签
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // 移除其他标签的active类
+                    document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                    // 添加当前标签的active类
+                    this.classList.add('active');
+                    
+                    // 设置搜索词并执行搜索
+                    const filterText = this.getAttribute('data-filter');
+                    document.getElementById('searchInput').value = filterText;
+                    performSearch();
+                });
+            });
+            console.log('✅ 快速筛选标签事件已绑定');
+        }
+
+        // 调试函数
+        function debugSearchPage() {
+            console.log('=== 搜索页面调试信息 ===');
+            
+            // 检查关键元素
+            const elements = {
+                'searchInput': document.getElementById('searchInput'),
+                'searchButton': document.getElementById('searchButton'),
+                'searchResults': document.getElementById('searchResults'),
+                'resultsCount': document.getElementById('resultsCount'),
+                'senderFilter': document.getElementById('senderFilter'),
+                'messageType': document.getElementById('messageType'),
+                'startDate': document.getElementById('startDate'),
+                'endDate': document.getElementById('endDate')
+            };
+            
+            console.log('HTML元素检查:');
+            for (const [id, element] of Object.entries(elements)) {
+                console.log(`  ${id}: ${element ? '✅ 存在' : '❌ 缺失'}`);
+            }
+            
+            // 检查关键函数
+            const functions = [
+                'performSearch', 'initializeFileList', 'searchInFile', 
+                'displayResults', 'filterFiles', 'clearResults',
+                'setupEventListeners', 'openChatFile', 'formatDate'
+            ];
+            
+            console.log('JavaScript函数检查:');
+            for (const funcName of functions) {
+                console.log(`  ${funcName}: ${typeof window[funcName] === 'function' ? '✅ 存在' : '❌ 缺失'}`);
+            }
+            
+            // 检查文件列表
+            console.log(`聊天文件数量: ${allChatFiles ? allChatFiles.length : '未加载'}`);
+            
+            // 测试加载第一个文件
+            if (allChatFiles && allChatFiles.length > 0) {
+                testFileLoad(allChatFiles[0]);
+            }
+            
+            console.log('=== 调试信息结束 ===');
+        }
+        
+        // 测试文件加载
+        async function testFileLoad(file) {
+            try {
+                console.log('测试加载文件:', file.url);
+                const response = await fetch(file.url);
+                console.log('响应状态:', response.status);
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const messages = doc.querySelectorAll('.message');
+                    console.log('找到消息数量:', messages.length);
+                    
+                    if (messages.length > 0) {
+                        const firstMessage = messages[0];
+                        const content = firstMessage.querySelector('.message-content');
+                        const sender = firstMessage.querySelector('.sender');
+                        console.log('第一条消息内容:', content ? content.textContent : '未找到');
+                        console.log('第一条消息发送者:', sender ? sender.textContent : '未找到');
+                    }
+                } else {
+                    console.warn('文件加载失败:', response.statusText);
+                }
+            } catch (error) {
+                console.error('文件加载错误:', error);
+            }
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面开始初始化...');
+            
+            // 初始化文件列表
+            initializeFileList();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 清空结果
+            clearResults();
+            
+            // 延迟执行调试检查
+            setTimeout(() => {
+                debugSearchPage();
+                console.log('页面初始化完成');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
