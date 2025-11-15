@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跳转中...</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .loading-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在跳转到聊天记录...</div>
+        <div class="loading-subtext">请稍候，正在加载页面</div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 页面加载完成后处理跳转
+        window.addEventListener('load', function () {
+            const fileUrl = getUrlParameter('file');
+            const messageId = getUrlParameter('message');
+
+            if (fileUrl) {
+                // 构建完整的文件路径
+                let fullFileUrl = fileUrl;
+                if (!fileUrl.startsWith('http') && !fileUrl.startsWith('file://')) {
+                    const currentLocation = window.location.href;
+                    const currentDir = currentLocation.substring(0, currentLocation.lastIndexOf('/') + 1);
+                    
+                    // 如果是Data目录的文件，需要从Pages目录返回上一级
+                    if (fileUrl.startsWith('Data/')) {
+                        fullFileUrl = currentDir + '../' + fileUrl;
+                    } else {
+                        fullFileUrl = currentDir + fileUrl;
+                    }
+                }
+
+                console.log('跳转到文件:', fullFileUrl);
+
+                // 显示跳转信息和手动链接
+                document.querySelector('.loading-text').textContent = '正在跳转到聊天记录...';
+                document.querySelector('.loading-subtext').innerHTML =
+                    '如果页面没有自动打开，请<a href="' + fullFileUrl + '" target="_blank" style="color: #667eea; text-decoration: underline;">点击这里手动打开</a>';
+
+                // 尝试在新窗口打开
+                try {
+                    const newWindow = window.open(fullFileUrl, '_blank');
+
+                    if (!newWindow || newWindow.closed) {
+                        // 弹窗被阻止，在当前窗口打开
+                        console.log('弹窗被阻止，使用当前窗口');
+                        window.location.href = fullFileUrl;
+                        return;
+                    }
+
+                    // 等待新窗口加载并进行处理
+                    setTimeout(function () {
+                        try {
+                            if (newWindow && !newWindow.closed && newWindow.document) {
+                                // 检查是否为Data目录文件，修复头像路径
+                                const isDataFile = fileUrl.indexOf('Data/') !== -1 || fileUrl.indexOf('Data\\') !== -1;
+
+                                if (isDataFile) {
+                                    const images = newWindow.document.querySelectorAll('img[src*="../生生[2137463976]/"]');
+                                    images.forEach(function (img) {
+                                        img.src = img.src.replace('../生生[2137463976]/', '生生[2137463976]/');
+                                    });
+                                    console.log('已修复 ' + images.length + ' 个头像路径');
+                                }
+
+                                // 如果有消息ID，定位到对应消息
+                                if (messageId) {
+                                    const targetElement = newWindow.document.getElementById(messageId);
+                                    if (targetElement) {
+                                        targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                                        targetElement.style.backgroundColor = "#fff3cd";
+                                        setTimeout(function () {
+                                            targetElement.style.backgroundColor = "";
+                                        }, 3000);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.log('无法访问新窗口:', e);
+                        }
+
+                        // 关闭当前跳转页面
+                        document.querySelector('.loading-text').textContent = '跳转完成！';
+                        setTimeout(function () {
+                            window.close();
+                        }, 1000);
+                    }, 2000); // 给新窗口2秒加载时间
+
+                } catch (e) {
+                    console.log('跳转失败:', e);
+                    document.querySelector('.loading-text').textContent = '跳转失败，请使用手动链接';
+                }
+            } else {
+                document.querySelector('.loading-text').textContent = '未指定文件';
+                document.querySelector('.loading-subtext').textContent = '缺少必要的参数';
+            }
+        });
+    </script>
+</body>
+
+</html>

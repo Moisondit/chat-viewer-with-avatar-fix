@@ -173,6 +173,21 @@
             margin-bottom: 10px;
         }
 
+        .result-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
         .result-sender {
             font-weight: bold;
             color: #4facfe;
@@ -253,6 +268,14 @@
 <body>
     <div class="container">
         <div class="header">
+            <div class="nav-links" style="margin-bottom: 20px;">
+                <a href="index.html" style="color: white; text-decoration: none; margin-right: 20px; font-size: 16px; transition: all 0.3s ease;">
+                    🏠 返回主页
+                </a>
+                <a href="search.html" style="color: white; text-decoration: none; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
+                    🔍 搜索页面
+                </a>
+            </div>
             <h1>🔍 聊天记录搜索</h1>
             <p>便携版 - 支持本地文件搜索</p>
         </div>
@@ -269,10 +292,18 @@
             </div>
 
             <div class="file-input-section">
-                <label for="fileInput" class="file-input-label">
-                    📁 点击选择聊天记录文件（支持多选）
-                </label>
-                <input type="file" id="fileInput" class="file-input" multiple accept=".html,.htm">
+                <div style="margin-bottom: 15px;">
+                    <label for="fileInput" class="file-input-label">
+                        📁 点击选择聊天记录文件（支持多选）
+                    </label>
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".html,.htm">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="folderInput" class="file-input-label">
+                        📂 或者选择Data目录（自动查找所有HTML文件）
+                    </label>
+                    <input type="file" id="folderInput" class="file-input" webkitdirectory directory multiple>
+                </div>
                 <div id="selectedFiles" class="selected-files"></div>
             </div>
 
@@ -301,10 +332,12 @@
 
             initializeEventListeners() {
                 const fileInput = document.getElementById('fileInput');
+                const folderInput = document.getElementById('folderInput');
                 const searchButton = document.getElementById('searchButton');
                 const searchInput = document.getElementById('searchInput');
 
                 fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                folderInput.addEventListener('change', (e) => this.handleFolderSelect(e));
                 searchButton.addEventListener('click', () => this.performSearch());
                 searchInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -315,14 +348,53 @@
 
             handleFileSelect(event) {
                 const files = Array.from(event.target.files);
-                this.files = files.map(file => ({
-                    file: file,
-                    name: file.name,
-                    url: URL.createObjectURL(file)
-                }));
+                this.files = files.map(file => {
+                    // 构建实际的文件路径，而不是blob URL
+                    const currentPath = window.location.pathname;
+                    const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                    
+                    // 如果文件在Data目录，构建正确的相对路径
+                    let filePath = file.name;
+                    if (file.webkitRelativePath) {
+                        filePath = file.webkitRelativePath;
+                    } else {
+                        // 假设文件在Data目录
+                        filePath = 'Data/' + file.name;
+                    }
+                    
+                    return {
+                        file: file,
+                        name: file.name,
+                        url: filePath, // 使用实际文件路径
+                        blobUrl: URL.createObjectURL(file) // 保留blob URL用于读取内容
+                    };
+                });
 
                 this.updateSelectedFilesDisplay();
                 this.showMessage('文件选择成功！现在可以开始搜索了。');
+            }
+
+            handleFolderSelect(event) {
+                const files = Array.from(event.target.files);
+                // 只过滤HTML文件
+                const htmlFiles = files.filter(file => 
+                    file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')
+                );
+
+                this.files = htmlFiles.map(file => {
+                    // 使用webkitRelativePath获取完整的相对路径
+                    const filePath = file.webkitRelativePath || 'Data/' + file.name;
+                    
+                    return {
+                        file: file,
+                        name: file.name,
+                        url: filePath, // 使用实际文件路径
+                        blobUrl: URL.createObjectURL(file) // 保留blob URL用于读取内容
+                    };
+                });
+
+                this.updateSelectedFilesDisplay();
+                this.showMessage(`从目录中选择了 ${htmlFiles.length} 个HTML文件！现在可以开始搜索了。`);
             }
 
             updateSelectedFilesDisplay() {
@@ -342,7 +414,10 @@
             }
 
             removeFile(index) {
-                URL.revokeObjectURL(this.files[index].url);
+                // 清理blob URL
+                if (this.files[index].blobUrl) {
+                    URL.revokeObjectURL(this.files[index].blobUrl);
+                }
                 this.files.splice(index, 1);
                 this.updateSelectedFilesDisplay();
                 
@@ -387,23 +462,28 @@
 
                 for (const fileInfo of this.files) {
                     try {
+                        // 使用blob URL读取文件内容
                         const html = await this.readFileContent(fileInfo.file);
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         
                         const messages = doc.querySelectorAll('.message, .chat-message, .msg');
                         messages.forEach((message, index) => {
-                            const content = message.textContent || '';
-                            if (content.toLowerCase().includes(lowerQuery)) {
+                            // 只提取消息内容进行搜索，排除发送者和时间信息
+                            const content = this.extractContent(message);
+                            // 只有当内容不为空且匹配查询时才添加到结果
+                            if (content && content.toLowerCase().includes(lowerQuery)) {
                                 const sender = this.extractSender(message);
                                 const time = this.extractTime(message);
+                                const avatar = this.extractAvatar(message);
                                 
                                 results.push({
-                                    content: this.extractContent(message),
+                                    content: content,
                                     sender: sender,
                                     time: time,
+                                    avatar: avatar,
                                     fileName: fileInfo.name,
-                                    fileUrl: fileInfo.url,
+                                    fileUrl: fileInfo.url, // 使用实际文件路径
                                     messageId: message.getAttribute('id') || `msg-${index}`,
                                     relevance: this.calculateRelevance(content, query)
                                 });
@@ -436,12 +516,72 @@
                 return timeElement ? timeElement.textContent.trim() : '';
             }
 
-            extractContent(message) {
-                const contentElement = message.querySelector('.content, .text, .message-text');
-                if (contentElement) {
-                    return contentElement.textContent.trim();
+            extractAvatar(message) {
+                const avatarElement = message.querySelector('.avatar-img, .message-avatar img, .user-avatar img');
+                if (avatarElement) {
+                    let avatarSrc = avatarElement.getAttribute('src');
+                    // 处理相对路径，转换为绝对路径
+                    if (avatarSrc && !avatarSrc.startsWith('http') && !avatarSrc.startsWith('data:')) {
+                        // 如果是相对路径，需要根据当前文件位置进行调整
+                        // 从Data目录返回到根目录，然后再访问头像
+                        if (avatarSrc.startsWith('../')) {
+                            avatarSrc = avatarSrc.replace('../', '');
+                        }
+                        return '../' + avatarSrc;
+                    }
+                    return avatarSrc;
                 }
-                return message.textContent.trim();
+                return null;
+            }
+
+            extractContent(message) {
+                // 优先查找专门的内容容器
+                const contentElement = message.querySelector('.content, .text, .message-text, .msg-content');
+                if (contentElement) {
+                    const content = contentElement.textContent.trim();
+                    // 确保内容不为空且不是纯发送者名称
+                    if (content && !this.isLikelySenderName(content)) {
+                        return content;
+                    }
+                }
+                
+                // 如果没有找到专门的内容容器，尝试排除发送者和时间元素
+                const clone = message.cloneNode(true);
+                
+                // 移除常见的发送者和时间元素
+                const senderElements = clone.querySelectorAll('.sender, .user, .nickname, .author, .from');
+                const timeElements = clone.querySelectorAll('.time, .timestamp, .date');
+                
+                senderElements.forEach(el => el.remove());
+                timeElements.forEach(el => el.remove());
+                
+                // 获取剩余的文本内容
+                let content = clone.textContent.trim();
+                
+                // 检查内容是否可能是发送者名称
+                if (content && this.isLikelySenderName(content)) {
+                    return ''; // 如果可能是发送者名称，返回空字符串
+                }
+                
+                return content;
+            }
+
+            // 判断文本是否可能是发送者名称
+            isLikelySenderName(text) {
+                // 常见的发送者名称
+                const commonNames = ['生生', '星如雨', '微信团队', '系统消息'];
+                
+                // 如果文本很短（1-4个字符）且在常见名称列表中，很可能是发送者名称
+                if (text.length <= 4 && commonNames.includes(text)) {
+                    return true;
+                }
+                
+                // 如果文本只包含中文字符且长度很短，也可能是发送者名称
+                if (text.length <= 3 && /^[\u4e00-\u9fa5]+$/.test(text)) {
+                    return true;
+                }
+                
+                return false;
             }
 
             calculateRelevance(content, query) {
@@ -488,19 +628,38 @@
 
                 resultsSection.innerHTML = `
                     <div style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
-                        <strong>找到 ${results.length} 条相关结果</strong>
-                    </div>
-                    ${results.map(result => `
-                        <div class="result-item" onclick="searchEngine.openResult('${result.fileUrl}', '${result.messageId}')">
-                            <div class="result-header">
-                                <span class="result-sender">${result.sender}</span>
-                                <span class="result-time">${result.time}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <strong>找到 ${results.length} 条相关结果</strong>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label for="sortSelect" style="font-weight: normal; margin: 0;">排序方式：</label>
+                                <select id="sortSelect" onchange="searchEngine.sortResults(this.value)" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                                    <option value="relevance">相关性排序（默认）</option>
+                                    <option value="date-desc">日期降序（最新在前）</option>
+                                    <option value="date-asc">日期升序（最旧在前）</option>
+                                </select>
                             </div>
-                            <div class="result-content">${this.highlightSearchTerm(result.content, query)}</div>
-                            <div class="result-file">📁 ${result.fileName}</div>
                         </div>
-                    `).join('')}
+                    </div>
+                    <div id="resultsList">
+                        ${results.map(result => `
+                            <div class="result-item" onclick="searchEngine.openResult('${result.fileUrl}', '${result.messageId}')">
+                                <div class="result-header">
+                                    ${result.avatar ? `<img src="${result.avatar}" alt="${result.sender}" class="result-avatar" onerror="this.style.display='none'">` : ''}
+                                    <div class="result-info">
+                                        <span class="result-sender">${result.sender}</span>
+                                        <span class="result-time">${result.time}</span>
+                                    </div>
+                                </div>
+                                <div class="result-content">${this.highlightSearchTerm(result.content, query)}</div>
+                                <div class="result-file">📁 ${result.fileName}</div>
+                            </div>
+                        `).join('')}
+                    </div>
                 `;
+                
+                // 保存当前结果和查询，用于排序
+                this.currentResults = results;
+                this.currentQuery = query;
             }
 
             highlightSearchTerm(text, query) {
@@ -511,22 +670,9 @@
             }
 
             openResult(fileUrl, messageId) {
-                // 在新窗口中打开文件并定位到对应消息
-                const newWindow = window.open(fileUrl, '_blank');
-                if (newWindow && messageId) {
-                    newWindow.onload = () => {
-                        setTimeout(() => {
-                            const element = newWindow.document.getElementById(messageId);
-                            if (element) {
-                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                element.style.backgroundColor = '#fff3cd';
-                                setTimeout(() => {
-                                    element.style.backgroundColor = '';
-                                }, 3000);
-                            }
-                        }, 500);
-                    };
-                }
+                // 使用redirect.html进行跳转
+                const redirectUrl = `redirect.html?file=${encodeURIComponent(fileUrl)}&message=${encodeURIComponent(messageId)}`;
+                window.open(redirectUrl, '_blank');
             }
 
             showMessage(message) {
@@ -537,6 +683,98 @@
                         <h3>${message}</h3>
                     </div>
                 `;
+            }
+
+            // 解析日期字符串为时间戳
+            parseDate(dateString) {
+                if (!dateString) return 0;
+                
+                // 尝试匹配常见的日期格式
+                const patterns = [
+                    /(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/,  // 2023-01-01 12:30:45
+                    /(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/,  // 2023/01/01 12:30:45
+                    /(\d{4})年(\d{1,2})月(\d{1,2})日\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/,  // 2023年1月1日 12:30:45
+                    /(\d{4})-(\d{1,2})-(\d{1,2})/,  // 2023-01-01
+                    /(\d{4})\/(\d{1,2})\/(\d{1,2})/,  // 2023/01/01
+                    /(\d{4})年(\d{1,2})月(\d{1,2})日/,  // 2023年1月1日
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = dateString.match(pattern);
+                    if (match) {
+                        const [, year, month, day, hour = 0, minute = 0, second = 0] = match;
+                        return new Date(
+                            parseInt(year),
+                            parseInt(month) - 1,
+                            parseInt(day),
+                            parseInt(hour),
+                            parseInt(minute),
+                            parseInt(second)
+                        ).getTime();
+                    }
+                }
+                
+                // 如果无法解析，尝试从文件名中提取日期
+                const fileNameMatch = this.currentResults?.find(r => r.time === dateString)?.fileName?.match(/chat_(\d{4})_(\d{1,2})_(\d{1,2})\.html/);
+                if (fileNameMatch) {
+                    const [, year, month, day] = fileNameMatch;
+                    return new Date(
+                        parseInt(year),
+                        parseInt(month) - 1,
+                        parseInt(day)
+                    ).getTime();
+                }
+                
+                return 0;
+            }
+
+            // 排序结果
+            sortResults(sortType) {
+                if (!this.currentResults || this.currentResults.length === 0) return;
+                
+                let sortedResults = [...this.currentResults];
+                
+                switch (sortType) {
+                    case 'date-desc':
+                        sortedResults.sort((a, b) => {
+                            const timeA = this.parseDate(a.time);
+                            const timeB = this.parseDate(b.time);
+                            return timeB - timeA; // 降序：最新在前
+                        });
+                        break;
+                    case 'date-asc':
+                        sortedResults.sort((a, b) => {
+                            const timeA = this.parseDate(a.time);
+                            const timeB = this.parseDate(b.time);
+                            return timeA - timeB; // 升序：最旧在前
+                        });
+                        break;
+                    case 'relevance':
+                    default:
+                        // 相关性排序（默认）
+                        sortedResults.sort((a, b) => b.relevance - a.relevance);
+                        break;
+                }
+                
+                // 更新显示
+                this.updateResultsDisplay(sortedResults, this.currentQuery);
+            }
+
+            // 更新结果显示（不重新初始化排序选项）
+            updateResultsDisplay(results, query) {
+                const resultsList = document.getElementById('resultsList');
+                if (!resultsList) return;
+                
+                resultsList.innerHTML = results.map(result => `
+                    <div class="result-item" onclick="searchEngine.openResult('${result.fileUrl}', '${result.messageId}')">
+                        <div class="result-header">
+                            <span class="result-sender">${result.sender}</span>
+                            <span class="result-time">${result.time}</span>
+                        </div>
+                        <div class="result-content">${this.highlightSearchTerm(result.content, query)}</div>
+                        <div class="result-file">📁 ${result.fileName}</div>
+                    </div>
+                `).join('');
             }
         }
 

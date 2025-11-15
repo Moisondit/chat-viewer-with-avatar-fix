@@ -123,6 +123,24 @@
         background: #e9ecef;
         transform: none;
     }
+    .back-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+    }
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        text-decoration: none;
+        color: white;
+    }
     @media (max-width: 768px) {
         .container {
             padding: 20px;
@@ -136,6 +154,7 @@
 </head>
 <body>
     <div class="container">
+        <a href="../index.html" class="back-button">🏠 返回主界面</a>
         <h1>聊天记录日历</h1>
         <div class="summary">
             <p>总聊天天数: 445 天</p>

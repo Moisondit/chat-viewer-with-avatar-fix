@@ -1,139 +1,174 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聊天记录系统</title>
     <style>
-    body {
-        font-family: 'Microsoft YaHei', Arial, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-    }
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    h1 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 36px;
-    }
-    .subtitle {
-        text-align: center;
-        color: #666;
-        margin-bottom: 40px;
-        font-size: 18px;
-    }
-    .nav-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
-    }
-    .nav-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
-        cursor: pointer;
-        text-decoration: none;
-    }
-    .nav-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        text-decoration: none;
-        color: white;
-    }
-    .nav-card h2 {
-        margin: 0 0 15px 0;
-        font-size: 24px;
-    }
-    .nav-card p {
-        margin: 0;
-        opacity: 0.9;
-        font-size: 16px;
-    }
-    .stats {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-        text-align: center;
-    }
-    .stats h3 {
-        margin: 0 0 15px 0;
-        color: #333;
-        font-size: 20px;
-    }
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-    }
-    .stat-item {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .stat-number {
-        font-size: 24px;
-        font-weight: bold;
-        color: #667eea;
-    }
-    .stat-label {
-        font-size: 14px;
-        color: #666;
-        margin-top: 5px;
-    }
-    .info-section {
-        background: #e3f2fd;
-        padding: 20px;
-        border-radius: 10px;
-        margin-top: 30px;
-    }
-    .info-section h3 {
-        margin: 0 0 15px 0;
-        color: #1976d2;
-    }
-    .info-section ul {
-        margin: 0;
-        padding-left: 20px;
-    }
-    .info-section li {
-        margin-bottom: 8px;
-        color: #555;
-    }
-    @media (max-width: 768px) {
-        .container {
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
             padding: 20px;
-            margin: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
-        .nav-cards {
-            grid-template-columns: 1fr;
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
         h1 {
-            font-size: 28px;
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 36px;
         }
-    }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-card h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+        }
+
+        .nav-card p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stats h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .info-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+
+        .info-section h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+        }
+
+        .info-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .nav-cards {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <h1>聊天记录系统</h1>
-        <p class="subtitle">星如雨[2872215021] - 聊天记录浏览系统</p>
-        
+        <div class="header">
+            <div class="nav-links" style="margin-bottom: 20px;">
+                <a href="index.html"
+                    style="color: white; text-decoration: none; margin-right: 20px; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
+                    🏠 主页
+                </a>
+                <a href="Pages/search.html"
+                    style="color: white; text-decoration: none; font-size: 16px; transition: all 0.3s ease;">
+                    🔍 搜索页面
+                </a>
+            </div>
+            <h1>💬 聊天记录查看器</h1>
+            <p>星如雨 - 便携版</p>
+        </div>
+
         <div class="stats">
             <h3>数据统计</h3>
             <div class="stats-grid">
@@ -157,13 +192,17 @@
         </div>
 
         <div class="nav-cards">
-            <a href="calendar_index.html" class="nav-card">
+            <a href="Data/calendar_index.html" class="nav-card">
                 <h2>📅 日历浏览</h2>
                 <p>按日期查看聊天记录，支持年份选择和日历导航</p>
             </a>
-            <a href="chat_index.html" class="nav-card">
+            <a href="chat/chat_index.html" class="nav-card">
                 <h2>📄 分页浏览</h2>
                 <p>按分页查看聊天记录，每页1000条消息</p>
+            </a>
+            <a href="Pages/search.html" class="nav-card">
+                <h2>🔍 搜索功能</h2>
+                <p>全文搜索聊天记录，支持关键词高亮和多种排序方式</p>
             </a>
         </div>
 
@@ -172,10 +211,24 @@
             <ul>
                 <li><strong>日历浏览：</strong>适合查看特定日期的聊天记录，支持2022年9月至2025年9月的数据</li>
                 <li><strong>分页浏览：</strong>适合按时间顺序浏览聊天记录，共92页，最后1页包含485条消息</li>
+                <li><strong>搜索功能：</strong>支持全文关键词搜索，可按相关性、时间升序/降序排序，点击结果直接跳转到对应位置</li>
                 <li><strong>数据范围：</strong>2022年09月24日 - 2025年09月28日</li>
                 <li><strong>文件格式：</strong>所有聊天记录已转换为HTML格式，支持浏览器直接查看</li>
             </ul>
         </div>
+
+        <div class="info-section" style="background: #f3e5f5;">
+            <h3>🔗 相关链接</h3>
+            <ul>
+                <li><strong>GitHub仓库：</strong><a href="https://github.com/Moisondit/chat-viewer-with-avatar-fix"
+                        target="_blank"
+                        style="color: #7b1fa2; text-decoration: none;">https://github.com/Moisondit/chat-viewer-with-avatar-fix</a>
+                </li>
+                <li><strong>项目说明：</strong>本项目的源代码和完整文件可在GitHub仓库中查看和下载</li>
+                <li><strong>更新日志：</strong>项目包含头像修复、搜索功能优化等改进</li>
+            </ul>
+        </div>
     </div>
 </body>
+
 </html>
